@@ -15,7 +15,7 @@ transform.dmc <- function(par.df)
   
   # focus combined with bottom-up stimulus-specific inputs
   par.df$s <- 1/par.df$f + par.df$I
-  .
+  
   # logarithm of gain x focus and stimulus-specific inputs
   par.df$mean_v <- log(par.df$g * par.df$s)
   
