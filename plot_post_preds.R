@@ -10,17 +10,12 @@ library(gridExtra)
 
 # Source model functions
 source("dmc/dmc.R")
-load_model("LBA", "lba_B.R")
+load_model("LBA", "lbaN_B.R")
+
 
 # Load samples
 print(load("samples/sTPPM_full_sdvS.RData"))
-# print(load("samples/sTPPM_full.RData"))
-# print(load("samples/sTPPM_B.RData"))
 samples <- samples1
-
-
-
-
 
 
 # Check how many runs it took to converge
@@ -34,7 +29,7 @@ for(i in 1:length(samples)) {
   print(samples[[i]]$nmc)
 }
 
-# # Bring longer thetas down to min nmc by sampling
+# Bring longer thetas down to min nmc by sampling
 nmcs <- sapply(samples, function(x) x$nmc)
 nmc  <- min(nmcs)
 for (i in 1:length(samples)) if (nmcs[i] > nmc) samples[[i]]$theta <-
@@ -57,8 +52,6 @@ str(samples[[1]]$theta)
 
 # Load posterior predictives
 print(load("deriv/post_pred_sims_full_sdvS.RData"))
-# print(load("deriv/post_pred_sims_full.RData"))
-# print(load("deriv/post_pred_sims_B.RData"))
 
 # Stack into data frame
 sims <- do.call(rbind, post_pred_sims)
@@ -100,10 +93,11 @@ names(GGLIST)
 # Re-order columns for desired panel order
 rp <- GGLIST$pps
 dim(rp)
-head(rp, 12)
+head(rp, 10)
 # rp <- rp[,c(1,3,2,4,5,6,7,8)]
 
 matchfun(rp)
+
 # Take only the correct responses and drop the R column
 rp_correct <- rp[ matchfun(rp),
                   !(names(rp) %in% c("R")) ]
@@ -116,6 +110,7 @@ levels(rp_correct$S)
 levels(rp_correct$S) <- c("Conflict", "Non-conflict", "PM conflict", "PM non-conflict")
 str(rp_correct)
 head(rp_correct, 10)
+
 
 # Ongoing task accuracy
 rp_correct_ongoing_plot <- rp_correct[rp_correct$S == "Conflict"|rp_correct$S == "Non-conflict",] %>%
@@ -130,13 +125,14 @@ rp_correct_ongoing_plot <- rp_correct[rp_correct$S == "Conflict"|rp_correct$S ==
                     width = 0.3)) +
   ylim(0.6, 1) +
   facet_grid(S ~ PM) +
-  labs(title = "Correct ongoing task responses", 
+  labs(title = "Ongoing task accuracy", 
        x = "Time pressure", 
        y = "Response proportion", 
        color = "Stimulus",
        shape = "Stimulus") +
   theme_minimal()
 rp_correct_ongoing_plot 
+
 
 # PM accuracy
 rp_correct_PM_plot <- rp_correct[rp_correct$S == "PM conflict"|rp_correct$S == "PM non-conflict",] %>%
@@ -151,7 +147,7 @@ rp_correct_PM_plot <- rp_correct[rp_correct$S == "PM conflict"|rp_correct$S == "
                     width = 0.3)) +
   ylim(0.6, 1) +
   facet_grid(S ~ PM) +
-  labs(title = "Correct PM responses", 
+  labs(title = "PM accuracy", 
        x = "Time pressure", 
        y = "Response proportion", 
        color = "Stimulus",
@@ -166,7 +162,7 @@ rp_correct_PM_plot
 # Re-order columns for desired panel order
 rt <- GGLIST$RTs
 dim(rt)
-head(rt, 12)
+head(rt, 10)
 # rt <- rt[,c(1,3,2,4,5,6,7,8)]
 
 
@@ -197,7 +193,7 @@ rt_correct_ongoing_plot <- rt_correct[rt_correct$S == "Conflict"|rt_correct$S ==
                     width = 0.3)) +
   ylim(0.5, 4.3) +
   facet_grid(S ~ PM) +
-  labs(title = "Correct ongoing task responses", 
+  labs(title = "Ongoing task RT (correct responses)", 
        x = "Time pressure", 
        y = "RT (s)", 
        color = "Stimulus",
@@ -219,7 +215,7 @@ rt_correct_PM_plot <- rt_correct[rt_correct$S == "PM conflict"|rt_correct$S == "
                     width = 0.3)) +
   ylim(0.5, 3) +
   facet_grid(S ~ PM) +
-  labs(title = "Correct PM responses", 
+  labs(title = "PM RT (correct responses)", 
        x = "Time pressure", 
        y = "RT (s)", 
        color = "Stimulus",
@@ -233,7 +229,7 @@ rt_correct_PM_plot
 # Pull out RTs
 rt <- GGLIST$RTs
 dim(rt)
-head(rt, 12)
+head(rt, 10)
 
 # Take only the correct responses and drop the R column
 rt_error <- rt[ !matchfun(rt), ]
@@ -264,7 +260,7 @@ rt_error_ongoing_plot <- rt_error[(rt_error$S == "Conflict" & rt_error$R == "Non
                     width = 0.3)) +
   ylim(0.5, 4.8) +
   facet_grid(S ~ PM) +
-  labs(title = "Incorrect ongoing task responses", 
+  labs(title = "Ongoing task RT (incorrect responses)", 
        x = "Time pressure", 
        y = "RT (s)", 
        color = "Stimulus",
@@ -287,7 +283,7 @@ rt_error_PM_plot <- rt_error[(rt_error$S != "PM conflict" & rt_error$R == "PM")|
                     width = 0.3)) +
   ylim(0, 10) +
   facet_grid(S ~ PM) +
-  labs(title = "Incorrect PM responses", 
+  labs(title = "PM RT (incorrect responses)", 
        x = "Time pressure", 
        y = "RT (s)", 
        color = "Stimulus",
@@ -296,9 +292,10 @@ rt_error_PM_plot <- rt_error[(rt_error$S != "PM conflict" & rt_error$R == "PM")|
 rt_error_PM_plot 
 
 
-
 # Combine plots -----------------------------------------------------------
 
+library("gridExtra")
+library("ggpubr")
 
 ggsave("plots/fits_accuracy_ongoing.png", plot = rp_correct_ongoing_plot, 
        width = 2000, height = 1400, units = "px")
@@ -306,31 +303,37 @@ ggsave("plots/fits_accuracy_ongoing.png", plot = rp_correct_ongoing_plot,
 ggsave("plots/fits_accuracy_PM.png", plot = rp_correct_PM_plot, 
        width = 2000, height = 1400, units = "px")
 
-# Arrange plots
-library(gridExtra)
-library("ggpubr")
+ggsave("plots/fits_correct_RT_PM.png", plot = rt_correct_PM_plot, 
+       width = 2000, height = 1400, units = "px")
 
+
+# Ongoing task RT
 # Remove plot legends
 rt_correct_ongoing_plot <- rt_correct_ongoing_plot + theme(legend.position = "none",
                                                            axis.title.x = element_blank(),
                                                            axis.text.x = element_blank())
 
-rt_correct_PM_plot <- rt_correct_PM_plot + theme(legend.position = "none",
-                                                 strip.text.x = element_blank())
-ggarrange(rt_correct_ongoing_plot, rt_correct_PM_plot, nrow = 2,
+rt_error_ongoing_plot <- rt_error_ongoing_plot + theme(legend.position = "none",
+                                                       strip.text.x = element_blank())
+
+ggarrange(rt_correct_ongoing_plot, rt_error_ongoing_plot, nrow = 2,
           common.legend = TRUE, legend = "right")
-ggsave("plots/fits_correct_RT.png", plot = last_plot(), 
+
+ggsave("plots/fits_RT_ongoing.png", plot = last_plot(), 
        width = 2200, height = 2000, units = "px")
 
 
+# PM RT
 # Remove plot legends
-rt_error_ongoing_plot <- rt_error_ongoing_plot + theme(legend.position = "none",
-                                                           axis.title.x = element_blank(),
-                                                           axis.text.x = element_blank())
+rt_correct_PM_plot <- rt_correct_PM_plot + theme(legend.position = "none",
+                                                 axis.title.x = element_blank(),
+                                                 axis.text.x = element_blank())
 
 rt_error_PM_plot <- rt_error_PM_plot + theme(legend.position = "none",
-                                                 strip.text.x = element_blank())
-ggarrange(rt_error_ongoing_plot, rt_error_PM_plot, nrow = 2,
+                                             strip.text.x = element_blank())
+
+ggarrange(rt_correct_PM_plot, rt_error_PM_plot, nrow = 2,
           common.legend = TRUE, legend = "right")
-ggsave("plots/fits_error_RT.png", plot = last_plot(), 
+
+ggsave("plots/fits_RT_PM.png", plot = last_plot(), 
        width = 2200, height = 2000, units = "px")
