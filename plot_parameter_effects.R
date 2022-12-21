@@ -10,7 +10,7 @@ library(gridExtra)
 
 # Source model functions
 source("dmc/dmc.R")
-load_model("LBA", "lba_B.R")
+load_model("LBA", "lbaN_B.R")
 
 
 # Summary functions -------------------------------------------------------
@@ -42,10 +42,6 @@ fixedeffects.meanthetas <- function(samples){
 # Load samples
 print(load("samples/sTPPM_full_sdvS.RData"))
 samples <- samples1
-# print(load("samples/sTPPM_full.RData"))
-# samples <- samples2
-# print(load("samples/sTPPM_B.RData"))
-# samples <- samples1
 samples[[1]]$p.names
 
 
@@ -59,7 +55,6 @@ samples[[1]]$p.names
 
 # Load parameter summary
 print(load("deriv/map_parms_full_sdvS.RData"))
-# print(load("deriv/map_parms_full.RData"))
 str(parms)
 head(parms)
 nrow(parms)
@@ -72,11 +67,9 @@ mean_thetas <- fixedeffects.meanthetas(samples)[[1]]
 
 # Save
 save(mean_thetas, file = "deriv/mean_thetas_full_sdvS.RData")
-# save(mean_thetas, file = "deriv/mean_thetas_full.RData")
 
 # Load
 print(load("deriv/mean_thetas_full_sdvS.RData"))
-# print(load("deriv/mean_thetas_full.RData"))
 
 # Explore mean thetas
 str(mean_thetas)
@@ -94,13 +87,19 @@ colMeans(parms)
 
 # Add factors for plotting ------------------------------------------------
 ps <- data.frame(msds)
-ps$TP <- NA; ps$PM <- NA; ps$S <- NA; ps$R <- NA
+ps$TP <- NA; ps$PM <- NA; ps$PM_trial <- NA; ps$S <- NA; ps$R <- NA
 
 ps$TP[grep("3s", rownames(ps))] <- "3s"
 ps$TP[grep("6s", rownames(ps))] <- "6s"
 
 ps$PM[grep("10", rownames(ps))] <- "10% PM"
 ps$PM[grep("30", rownames(ps))] <- "30% PM"
+
+ps$PM_trial[grep("cc", rownames(ps))] <- "Absent"
+ps$PM_trial[grep("nn", rownames(ps))] <- "Absent"
+ps$PM_trial[grep("pc", rownames(ps))] <- "Present"
+ps$PM_trial[grep("pn", rownames(ps))] <- "Present"
+ps$PM_trial[grep("pp", rownames(ps))] <- "Present"
 
 ps$S[grep("cc", rownames(ps))] <- "Conflict"
 ps$S[grep("nn", rownames(ps))] <- "Non-conflict"
@@ -114,6 +113,7 @@ ps$R[grep("P", rownames(ps))] <- "PM"
 
 ps$TP <- factor(ps$TP)
 ps$PM <- factor(ps$PM)
+ps$PM_trial <- factor(ps$PM_trial)
 ps$S <- factor(ps$S)
 ps$R <- factor(ps$R)
 str(ps)
@@ -136,6 +136,17 @@ v
 v <- v[!(v$S == "PM conflict" & v$R != "PM") & !(v$S == "PM non-conflict" & v$R != "PM"),]
 v
 
+# Get reactive control v
+reactive <- ps[ grep("mean_v.", rownames(ps)), ]
+reactive <- reactive[ -grep("PMFA", rownames(reactive)), ]
+reactive <- reactive[ -grep("P", rownames(reactive)), ]
+reactive <- reactive[ (reactive$S == "Conflict" & reactive$R == "Conflict")|
+                        (reactive$S == "PM conflict" & reactive$R == "Conflict")|
+                        (reactive$S == "Non-conflict" & reactive$R == "Non-conflict")|
+                        (reactive$S == "PM non-conflict" & reactive$R == "Non-conflict"), ]
+reactive
+
+
 # Get t0
 t0 <- ps[ grep("t0",rownames(ps)), c("M", "SD") ]
 t0
@@ -153,7 +164,7 @@ B_plot <- B %>%
   geom_errorbar(aes(ymin = M - SD, 
                     ymax = M + SD, 
                     width = 0.3, color = R)) +
-  ylim(1.1, 2.7) +
+  ylim(1.1, 2.3) +
   facet_grid(. ~ PM) +
   labs(title = "Threshold", 
        x = "Time pressure", 
@@ -164,7 +175,8 @@ B_plot <- B %>%
 B_plot
 
 ggsave("plots/B_plot.png", plot = B_plot, 
-       width = 2000, height = 1400, units = "px")
+       width = 2200, height = 1200, units = "px")
+
 
 
 # Plot rates
@@ -188,12 +200,13 @@ v_plot <- v %>%
 v_plot
 
 ggsave("plots/v_plot.png", plot = v_plot, 
-       width = 2000, height = 1400, units = "px")
+       width = 2200, height = 1400, units = "px")
 
 
-# Rates arranged slightly differently
-v_plot2 <- v %>%
-  ggplot(aes(x = factor(PM), y = M, shape = R, color = R)) +
+
+# Plot reactive control
+reactive_plot <- reactive %>%
+  ggplot(aes(x = factor(PM_trial), y = M, shape = R, color = R)) +
   geom_point(stat = "identity", aes(), size = 3) +
   geom_line(aes(y = M, group = R), 
             linetype = "dashed", 
@@ -201,13 +214,16 @@ v_plot2 <- v %>%
   geom_errorbar(aes(ymin = M - SD, 
                     ymax = M + SD, 
                     width = 0.3)) +
-  ylim(0, 2.8) +
-  facet_grid(S ~ TP) +
+  ylim(0.4, 1.7) +
+  facet_grid(PM ~ TP) +
   labs(title = "Accumulation rate", 
-       x = "Time pressure", 
+       x = "PM stimulus", 
        y = "v", 
        color = "Response",
        shape = "Response") +
   theme_minimal()
-v_plot2
+reactive_plot
+
+ggsave("plots/reactive_plot.png", plot = reactive_plot, 
+       width = 2200, height = 1200, units = "px")
 
