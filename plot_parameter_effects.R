@@ -216,7 +216,7 @@ reactive_plot <- reactive %>%
                     width = 0.3)) +
   ylim(0.4, 1.7) +
   facet_grid(PM ~ TP) +
-  labs(title = "Accumulation rate", 
+  labs(title = "Reactive control of ongoing task accumulation rate", 
        x = "PM stimulus", 
        y = "v", 
        color = "Response",
