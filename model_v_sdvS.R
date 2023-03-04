@@ -83,6 +83,36 @@ map_v[1:48] <- c("cc3s10C","nn3s10C","pc3s10C","pn3s10C",
 map_v
 
 
+# sdv map
+map_sdv <- empty.map(
+  
+  list(S = c("cc","nn","pc","pn"),
+       TP = c("3s","6s"),
+       PM = c("10","30"),
+       R = c("C","N","P")),
+  
+  levels = c("ccSDV","nnSDV","ppSDV"))
+map_sdv
+length(map_sdv)
+length(levels(map_sdv))
+
+map_sdv[1:48] <- c("ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV",
+                   "ccSDV","nnSDV","ppSDV","ppSDV")
+map_sdv
+
+
 # Threshold map
 map_B <- empty.map(
   
@@ -122,7 +152,7 @@ model <- model.dmc(
     B = "MAPB",
     t0 = "1",
     mean_v = "MAPV",
-    sd_v = "S",
+    sd_v = "MAPSDV",
     st0 = "1",
     N = "PM"), 
   match.map = list(
@@ -132,6 +162,7 @@ model <- model.dmc(
       pc = "P", 
       pn = "P"),
     MAPB = map_B,
+    MAPSDV = map_sdv,
     MAPV = map_v),
   factors = list(
     S = c("cc", "nn", "pc", "pn"),
@@ -139,7 +170,7 @@ model <- model.dmc(
     PM = c("10", "30")),
   constants = c(N.10 = 3, N.30 = 3, 
                 st0 = 0,
-                sd_v.pn = 0.5), 
+                sd_v.ppSDV = 0.5), 
   responses = c("C","N","P"),
   type = "normN")
 
@@ -164,7 +195,7 @@ p.vector <- c(t0 = 0.3, A = 1.5,
               mean_v.pp3s10P = 1, mean_v.pp6s10P = 1, mean_v.pp3s30P = 1, mean_v.pp6s30P = 1,
               mean_v.PMFA = 0,
               
-              sd_v.cc = 0.5, sd_v.nn = 0.5, sd_v.pc = 0.5)
+              sd_v.ccSDV = 0.5, sd_v.nnSDV = 0.5)
 
 length(p.vector)
 
@@ -178,9 +209,9 @@ check.p.vector(p.vector, model)
 p.prior <- prior.p.dmc(
   dists = c("beta", rep("tnorm", length(p.vector)-1)),
   p1 = c(p.vector),                           
-  p2 = c(0.2, 0.1, rep(1, 3), rep(1, 37), rep(0.5, 3)), 
-  lower = c(0.1, 0, rep(0, 3), rep(NA, 37), rep(0, 3)),
-  upper = c(1, 10, rep(Inf, 3), rep(Inf, 37), rep(Inf, 3))
+  p2 = c(0.2, 0.1, rep(1, 3), rep(1, 37), rep(0.5, 2)), 
+  lower = c(0.1, 0, rep(0, 3), rep(NA, 37), rep(0, 2)),
+  upper = c(1, 10, rep(Inf, 3), rep(Inf, 37), rep(Inf, 2))
 )
 length(p.prior)
 length(p.vector)
@@ -195,7 +226,7 @@ save(dm, file = "samples/dmTPPM_v_sdvS.RData")
 
 
 # Initialize samples object
-# 135 chains
+# 132 chains
 n.chains <- length(p.prior) * 3
 
 # Generate start points for fixed effects model

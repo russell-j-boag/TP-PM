@@ -7,7 +7,7 @@ rm(list=ls())
 
 # Load libraries and DMC functions
 source("dmc/dmc.R")
-load_model("LBA", "lbaN_B.R")
+load_model("LBA", "lbaN_B_gf.R")
 
 
 # Load data
@@ -38,8 +38,8 @@ table(dat$s)
 #                  PM = c("10","30"),
 #                  R = c("C","N","P")))y
 
-# Mean v map
-map_v <- empty.map(
+# Bottom-up inputs map
+map_I <- empty.map(
   
   list(S = c("cc","nn","pc","pn"),
        TP = c("3s","6s"),
@@ -62,11 +62,11 @@ map_v <- empty.map(
              "pp6s30P",
              
              "PMFA"))
-map_v
-length(map_v)
-length(levels(map_v))
+map_I
+length(map_I)
+length(levels(map_I))
 
-map_v[1:48] <- c("cc3s10C","nn3s10C","pc3s10C","pn3s10C",
+map_I[1:48] <- c("cc3s10C","nn3s10C","pc3s10C","pn3s10C",
                  "cc6s10C","nn6s10C","pc6s10C","pn6s10C",
                  "cc3s30C","nn3s30C","pc3s30C","pn3s30C",
                  "cc6s30C","nn6s30C","pc6s30C","pn6s30C",
@@ -80,7 +80,73 @@ map_v[1:48] <- c("cc3s10C","nn3s10C","pc3s10C","pn3s10C",
                  "PMFA","PMFA","pp6s10P","pp6s10P",
                  "PMFA","PMFA","pp3s30P","pp3s30P",
                  "PMFA","PMFA","pp6s30P","pp6s30P")
-map_v
+map_I
+
+
+# # Gain map
+# map_g <- empty.map(
+#   
+#   list(S = c("cc","nn","pc","pn"),
+#        TP = c("3s","6s"),
+#        PM = c("10","30"),
+#        R = c("C","N","P")),
+#   
+#   levels = c("3s10",
+#              "3s30",
+#              "6s10",
+#              "6s30"))
+# map_g
+# length(map_g)
+# length(levels(map_g))
+# 
+# map_g[1:48] <- c("3s10","3s10","3s10","3s10",
+#                  "6s10","6s10","6s10","6s10",
+#                  "3s30","3s30","3s30","3s30",
+#                  "6s30","6s30","6s30","6s30",
+#                  
+#                  "3s10","3s10","3s10","3s10",
+#                  "6s10","6s10","6s10","6s10",
+#                  "3s30","3s30","3s30","3s30",
+#                  "6s30","6s30","6s30","6s30",
+#                  
+#                  "3s10","3s10","3s10","3s10",
+#                  "6s10","6s10","6s10","6s10",
+#                  "3s30","3s30","3s30","3s30",
+#                  "6s30","6s30","6s30","6s30")
+# map_g
+
+
+# # Focus map
+# map_f <- empty.map(
+#   
+#   list(S = c("cc","nn","pc","pn"),
+#        TP = c("3s","6s"),
+#        PM = c("10","30"),
+#        R = c("C","N","P")),
+#   
+#   levels = c("3s10",
+#              "3s30",
+#              "6s10",
+#              "6s30"))
+# map_f
+# length(map_f)
+# length(levels(map_f))
+# 
+# map_f[1:48] <- c("3s10","3s10","3s10","3s10",
+#                  "6s10","6s10","6s10","6s10",
+#                  "3s30","3s30","3s30","3s30",
+#                  "6s30","6s30","6s30","6s30",
+#                  
+#                  "3s10","3s10","3s10","3s10",
+#                  "6s10","6s10","6s10","6s10",
+#                  "3s30","3s30","3s30","3s30",
+#                  "6s30","6s30","6s30","6s30",
+#                  
+#                  "3s10","3s10","3s10","3s10",
+#                  "6s10","6s10","6s10","6s10",
+#                  "3s30","3s30","3s30","3s30",
+#                  "6s30","6s30","6s30","6s30")
+# map_f
 
 
 # sdv map
@@ -164,7 +230,9 @@ model <- model.dmc(
     A = "1",
     B = "MAPB",
     t0 = "1",
-    mean_v = "MAPV",
+    I = "MAPI",
+    g = c("TP", "PM"),
+    f = c("TP", "PM"),
     sd_v = "MAPSDV",
     st0 = "1",
     N = "PM"), 
@@ -176,7 +244,7 @@ model <- model.dmc(
       pn = "P"),
     MAPB = map_B,
     MAPSDV = map_sdv,
-    MAPV = map_v),
+    MAPI = map_I),
   factors = list(
     S = c("cc", "nn", "pc", "pn"),
     TP = c("3s", "6s"),
@@ -196,16 +264,19 @@ p.vector <- c(t0 = 0.3, A = 1.5,
               B.3s10N = 2,  B.3s30N = 2,  B.6s10N = 2,  B.6s30N = 2, 
               B.3s10P = 2,  B.3s30P = 2,  B.6s10P = 2,  B.6s30P = 2,
               
-              mean_v.cc3s10C = 1, mean_v.nn3s10C = 0, mean_v.pc3s10C = 0, mean_v.pn3s10C = 0, 
-              mean_v.cc6s10C = 1, mean_v.nn6s10C = 0, mean_v.pc6s10C = 0, mean_v.pn6s10C = 0,
-              mean_v.cc3s30C = 1, mean_v.nn3s30C = 0, mean_v.pc3s30C = 0, mean_v.pn3s30C = 0, 
-              mean_v.cc6s30C = 1, mean_v.nn6s30C = 0, mean_v.pc6s30C = 0, mean_v.pn6s30C = 0,
-              mean_v.cc3s10N = 0, mean_v.nn3s10N = 1, mean_v.pc3s10N = 0, mean_v.pn3s10N = 0,
-              mean_v.cc6s10N = 0, mean_v.nn6s10N = 1, mean_v.pc6s10N = 0, mean_v.pn6s10N = 0,
-              mean_v.cc3s30N = 0, mean_v.nn3s30N = 1, mean_v.pc3s30N = 0, mean_v.pn3s30N = 0,
-              mean_v.cc6s30N = 0, mean_v.nn6s30N = 1, mean_v.pc6s30N = 0, mean_v.pn6s30N = 0,
-              mean_v.pp3s10P = 1, mean_v.pp6s10P = 1, mean_v.pp3s30P = 1, mean_v.pp6s30P = 1,
-              mean_v.PMFA = 0,
+              I.cc3s10C = 1, I.nn3s10C = 0, I.pc3s10C = 0, I.pn3s10C = 0, 
+              I.cc6s10C = 1, I.nn6s10C = 0, I.pc6s10C = 0, I.pn6s10C = 0,
+              I.cc3s30C = 1, I.nn3s30C = 0, I.pc3s30C = 0, I.pn3s30C = 0, 
+              I.cc6s30C = 1, I.nn6s30C = 0, I.pc6s30C = 0, I.pn6s30C = 0,
+              I.cc3s10N = 0, I.nn3s10N = 1, I.pc3s10N = 0, I.pn3s10N = 0,
+              I.cc6s10N = 0, I.nn6s10N = 1, I.pc6s10N = 0, I.pn6s10N = 0,
+              I.cc3s30N = 0, I.nn3s30N = 1, I.pc3s30N = 0, I.pn3s30N = 0,
+              I.cc6s30N = 0, I.nn6s30N = 1, I.pc6s30N = 0, I.pn6s30N = 0,
+              I.pp3s10P = 1, I.pp6s10P = 1, I.pp3s30P = 1, I.pp6s30P = 1,
+              I.PMFA = 0,
+              
+              g.3s.10 = 1.5, g.6s.10 = 1.5, g.3s.30 = 1.5, g.6s.30 = 1.5,    
+              f.3s.10 = 1.5, f.6s.10 = 1.5, f.3s.30 = 1.5, f.6s.30 = 1.5,
               
               sd_v.ccSDV = 0.5, sd_v.nnSDV = 0.5)
 
@@ -221,9 +292,9 @@ check.p.vector(p.vector, model)
 p.prior <- prior.p.dmc(
   dists = c("beta", rep("tnorm", length(p.vector)-1)),
   p1 = c(p.vector),                           
-  p2 = c(0.2, 0.1, rep(1, 12), rep(1, 37), rep(0.5, 2)), 
-  lower = c(0.1, 0, rep(0, 12), rep(NA, 37), rep(0, 2)),
-  upper = c(1, 10, rep(Inf, 12), rep(Inf, 37), rep(Inf, 2))
+  p2 = c(0.2, 0.1, rep(1, 12), rep(1, 37), rep(0.5, 4), rep(0.5, 4), rep(0.5, 2)), 
+  lower = c(0.1, 0, rep(0, 12), rep(NA, 37), rep(0, 4), rep(0, 4), rep(0, 2)),
+  upper = c(1, 10, rep(Inf, 12), rep(Inf, 37), rep(Inf, 4), rep(Inf, 4), rep(Inf, 2))
 )
 length(p.prior)
 length(p.vector)
@@ -234,11 +305,11 @@ length(p.vector)
 
 # Make data model
 dm <- data.model.dmc(dat, model)
-save(dm, file = "samples/dmTPPM_full_sdvS.RData")
+save(dm, file = "samples/dmTPPM_gf_full_sdvS.RData")
 
 
 # Initialize samples object
-# 159 chains
+# 183 chains
 n.chains <- length(p.prior) * 3
 
 # Generate start points for fixed effects model
@@ -249,10 +320,10 @@ samples <- h.samples.dmc(nmc = 100,
                          n.chains = n.chains)
 
 # Save
-save(samples, file = "samples/sTPPM_full_sdvS.RData")
+save(samples, file = "samples/sTPPM_gf_full_sdvS.RData")
 
 # Load
-print(load("samples/sTPPM_full_sdvS.RData"))
+print(load("samples/sTPPM_gf_full_sdvS.RData"))
 
 # -------------------------------------------------------------------------
 # 
@@ -299,4 +370,4 @@ print(load("samples/sTPPM_full_sdvS.RData"))
 # )
 # 
 # # Save
-# save(hsamples, file = "dmc/samples/hsTPPM_full_sdvS.RData")
+# save(hsamples, file = "dmc/samples/hsTPPM_gf_full_sdvS.RData")

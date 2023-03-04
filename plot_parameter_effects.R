@@ -147,8 +147,12 @@ reactive <- reactive[ (reactive$S == "Conflict" & reactive$R == "Conflict")|
 reactive
 
 
+# Get sdv
+sdv <- ps[ grep("sd_v", rownames(ps)), c("M", "SD") ]
+sdv
+
 # Get t0
-t0 <- ps[ grep("t0",rownames(ps)), c("M", "SD") ]
+t0 <- ps[ grep("t0", rownames(ps)), c("M", "SD") ]
 t0
 
 

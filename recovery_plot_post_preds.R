@@ -1,21 +1,27 @@
 # Clear workspace
 rm(list = ls())
 
-# Set working directory
+# Set working directory to top-level folder containing DMC
 getwd()
 
-# Load packages
-library(tidyverse)
-library(gridExtra)
-
-# Source model functions
+# Load libraries and DMC functions
 source("dmc/dmc.R")
 load_model("LBA", "lbaN_B.R")
+# source("dmc/dmc_ATC.R")
+# source("dmc/dmc_PMDC.R")
 
+# Load samples object
+print(load("samples/recov_sTPPM_full_sdvS.RData"))
+samples <- recov_samples1
 
-# Load samples
-print(load("samples/sTPPM_full_sdvS.RData"))
-samples <- samples1
+# Bring longer thetas down to min nmc by sampling
+nmcs <- sapply(samples, function(x) x$nmc)
+nmc  <- min(nmcs)
+for (i in 1:length(samples)) if (nmcs[i] > nmc) samples[[i]]$theta <-
+  samples[[i]]$theta[,,sample(1:dim(samples[[i]]$theta)[3], nmc)]
+
+ci <- subject.average.ci(samples)
+round(ci,3)
 
 
 # Check how many runs it took to converge
@@ -29,29 +35,28 @@ for(i in 1:length(samples)) {
   print(samples[[i]]$nmc)
 }
 
-# Bring longer thetas down to min nmc by sampling
-nmcs <- sapply(samples, function(x) x$nmc)
-nmc  <- min(nmcs)
-for (i in 1:length(samples)) if (nmcs[i] > nmc) samples[[i]]$theta <-
-  samples[[i]]$theta[,,sample(1:dim(samples[[i]]$theta)[3], nmc)]
-
-ci <- subject.average.ci(samples)
-round(ci, 3)
-
 # How many parameters? How many chains?
-names(samples[[1]])
-str(samples[[1]]$theta)
+# str(samples[[1]])
+# names(samples[[1]])
+# samples[[1]]$theta
+
+# Checkout some trace plots for participants and confirm that the samples look
+# like mcmc samples should look.
+# plot.dmc(samples[[1]])
+
+# Plot the posterior parameter distributions against the priors to make sure
+# that you don't have huge prior influence
+# plot.dmc(samples[[1]], p.prior = samples[[1]]$p.prior)
 
 
+# Plot mean accuracy and RT -----------------------------------------------
 
-# Posterior predictive fits -----------------------------------------------
-
-# # Generate posterior predictives
+# Generate posterior predictives
 # post_pred_sims <- h.post.predict.dmc(samples, save.simulation = TRUE)
-# save(post_pred_sims, file = "deriv/post_pred_sims_full_sdvS.RData")
+# save(post_pred_sims, file = "deriv/post_pred_sims_recov_full_sdvS.RData")
 
 # Load posterior predictives
-print(load("deriv/post_pred_sims_full_sdvS.RData"))
+print(load("deriv/post_pred_sims_recov_full_sdvS.RData"))
 
 # Stack into data frame
 sims <- do.call(rbind, post_pred_sims)
@@ -78,14 +83,12 @@ table(matchfun(data))
 table(matchfun(sims))
 
 # Get a gglist for plotting (as stored in post_pred_sims)
-# get.fitgglist.dmc
 GGLIST <- get.fitgglist.dmc(sims, data, acc.fun = matchfun)
 GGLIST
 
 # Remove NAs
 GGLIST <- lapply(GGLIST, function(x)  x[is.finite(x$data),])
 names(GGLIST)
-
 
 
 # Correct response proportion ---------------------------------------------
@@ -231,7 +234,7 @@ rt <- GGLIST$RTs
 dim(rt)
 head(rt, 10)
 
-# Take only the correct responses and drop the R column
+# Take only the incorrect responses and drop the R column
 rt_error <- rt[ !matchfun(rt), ]
 rt_error
 

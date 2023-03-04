@@ -3,10 +3,10 @@ source("dmc/dmc.R")
 load_model("LBA", "lbaN_B.R")
 
 # Load
-load("samples/sTPPM_v_sdvS.RData")
+print(load("samples/sTPPM_v_sdvS.RData"))
 
 samples <- h.run.dmc(samples,
-                     cores = 48,
+                     cores = 24,
                      report = 10,
                      p.migrate = 0.05)
 
@@ -19,8 +19,8 @@ save(samples, file = "samples/sTPPM_v_sdvS.RData")
 samples1 <- h.RUN.dmc(h.samples.dmc(samples = samples,
                                     nmc = 100,
                                     thin = 10,
-                                    n.chains = 135),
-                      cores = 48,
+                                    n.chains = 132),
+                      cores = 24,
                       report = 10, 
                       verbose = TRUE)
 
@@ -30,7 +30,7 @@ save(samples, samples1, file = "samples/sTPPM_v_sdvS.RData")
 # samples2 <- h.RUN.dmc(h.samples.dmc(samples = samples1,
 #                                     nmc = 100,
 #                                     thin = 10,
-#                                     n.chains = 135),
+#                                     n.chains = 132),
 #                       cores = 16,
 #                       report = 10)
 # # Save samples
