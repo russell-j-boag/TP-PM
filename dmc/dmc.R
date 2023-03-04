@@ -26,6 +26,7 @@ source ("dmc_sampling.R")
 source ("dmc_hierarchical.R")
 source ("dmc_plotting.R")
 source ("dmc_analysis.R")
+source ("dmc_extras.R")
 
 setwd(temp_wd)
 

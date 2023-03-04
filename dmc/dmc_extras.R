@@ -27,13 +27,13 @@ singlerep.mean.sd <- function(rsamples, fun) {
 
 get.95.50 <- function (rsamples, p.vector, fun){ 
   test <- c(h.check.function.recovery.dmc(
-  rsamples, p.vector, fun), h.check.function.recovery.dmc(
-  rsamples, p.vector, fun, CI=c(0.25,0.75)))
+    rsamples, p.vector, fun), h.check.function.recovery.dmc(
+      rsamples, p.vector, fun, CI=c(0.25,0.75)))
   paste(round(test[1],2), "% / ", round(test[2],2), "%", sep="")
-  }
+}
 
 h.check.function.recovery.dmc <- function(rsamples, p.vector, fun, CI= c(0.025, 0.975)) {
-#Get the posterior mean and credible intervals for each replicate
+  #Get the posterior mean and credible intervals for each replicate
   inference <- list()
   for (i in 1:length(rsamples)) {
     thetas <- rsamples[[i]]$theta
@@ -43,20 +43,20 @@ h.check.function.recovery.dmc <- function(rsamples, p.vector, fun, CI= c(0.025, 
   dim3 <- c(dim(inference[[1]]), length(inf2)/prod(dim(inference[[1]])))
   dim(inf2) <- dim3
   test<- apply(inf2, 4, function(x) c(mean(x), quantile(x, probs=CI)))
-#Hacky way to reshape p.vector same way to get functions in same way
-#I should probably make fun work with sim.p.vector rather than thetas for future work,
-#simpler, but already too far down the rabbit hole with this way for this paper
+  #Hacky way to reshape p.vector same way to get functions in same way
+  #I should probably make fun work with sim.p.vector rather than thetas for future work,
+  #simpler, but already too far down the rabbit hole with this way for this paper
   pnames <- names(p.vector)
   dim(p.vector) <- c(1,length(p.vector),1); colnames(p.vector) <- pnames
   actual <- fun(p.vector)
-#percentage of time CI contains actual  
+  #percentage of time CI contains actual  
   sum(apply(test,2, function(x) {x[2]<actual & x[3] >actual})) / length(test[1,]) *100
 }
 
 get.cors <- function(thetas, data) {
   
   CORS <- apply(thetas, c(1,2,3), function(x) cor(x, data))
-
+  
   RAV <- apply(CORS, c(2), postRav, n=length(data), kappa=1, spacing=.01)
   post_medians <- apply(RAV, c(2), postRav.mean)
   post_LCI <- apply(RAV, c(2), function(x) postRav.ci(x)[1])
@@ -88,61 +88,61 @@ get.subj.effects <- function(PP, fun) {
 
 
 subj.meanthetas <- function (samples){
-    samps <- lapply(samples, function(x) x["theta"])
-    ## thetas into big array for apply
-    samps2<- unlist(samps)
-    dim3 <- c(dim(samps[[1]]$theta), length(samps2)/prod(dim(samps[[1]]$theta)))
-    dim(samps2) <- dim3
-    samps3<- apply(samps2, c(4,2), mean)
-    ## back to a theta list after applied
-    colnames(samps3)<- colnames(samps[[1]]$theta)
-    df <- cbind(names(samples), data.frame(samps3))
-    names(df)[1] <- "s"
-    df
+  samps <- lapply(samples, function(x) x["theta"])
+  ## thetas into big array for apply
+  samps2<- unlist(samps)
+  dim3 <- c(dim(samps[[1]]$theta), length(samps2)/prod(dim(samps[[1]]$theta)))
+  dim(samps2) <- dim3
+  samps3<- apply(samps2, c(4,2), mean)
+  ## back to a theta list after applied
+  colnames(samps3)<- colnames(samps[[1]]$theta)
+  df <- cbind(names(samples), data.frame(samps3))
+  names(df)[1] <- "s"
+  df
 }
 
 get.subj.pp.MCI <- function(sim, fun) {
- 
+  
   data <- attr(sim, "data")
   nreps=max(sim$reps)
   data.effects<- fun(data)
   noutput <- length(data.effects)
-
+  
   sim.effects <- matrix(NA, nrow= nreps, ncol=noutput+1)
   sim.effects[,noutput+1] <- 1:nreps
-
+  
   colnames(sim.effects) <- c(names(data.effects), "n.rep")
-
+  
   for (j in 1:nreps) {
-
+    
     currentsim.effects <- sim[sim$reps==j,]
     sim.effects[j,1:noutput] <- fun(currentsim.effects)
-
+    
   }
   out <- apply(sim.effects, 2,function(x) c(mean(x, na.rm=T), quantile(x, probs=c(0.025,0.975), na.rm=T))) 
   cbind(t(out[,(!colnames(out) %in% "n.rep")]), data.effects)
-  }
+}
 
 
 convert.magic <- function(obj,types){
-    for (i in 1:length(obj)){
-        FUN <- switch(types[i],character = as.character, 
-                                   numeric = as.numeric, 
-                                   factor = as.factor)
-        obj[,i] <- FUN(obj[,i])
-    }
-    obj
+  for (i in 1:length(obj)){
+    FUN <- switch(types[i],character = as.character, 
+                  numeric = as.numeric, 
+                  factor = as.factor)
+    obj[,i] <- FUN(obj[,i])
+  }
+  obj
 }
 
 
 tabtoAPA <- function (tab){
   for (i in seq (1, length(tab), 2))  {
-   newtab<- paste(tab[,i], " (", tab[,i+1], ")", sep="")
-  if (i == 1) { new.tab <- newtab } else {new.tab <- cbind (new.tab, newtab)}
-   i = i+1
+    newtab<- paste(tab[,i], " (", tab[,i+1], ")", sep="")
+    if (i == 1) { new.tab <- newtab } else {new.tab <- cbind (new.tab, newtab)}
+    i = i+1
   }
-   rownames(new.tab)<- rownames (tab)
-   new.tab
+  rownames(new.tab)<- rownames (tab)
+  new.tab
   
 }
 
@@ -163,7 +163,7 @@ GET.fitgglist.dmc <- function (
   correct.only=FALSE,error.only=FALSE
   
 ) {
- 
+  
   sim <- do.call(rbind, PP)
   # Do the same for the data
   data <- lapply(PP, function(x) attr(x, "data"))
@@ -175,10 +175,11 @@ GET.fitgglist.dmc <- function (
 }
 
 
-get.ns.dmc<- function(samples) {
-model <- attributes(samples$data)$model
-facs <- names(attr(model,"factors"))
-table(samples$data[,facs],dnn=facs)}
+get.ns.dmc <- function(samples) {
+  model <- attributes(samples$data)$model
+  facs <- names(attr(model,"factors"))
+  table(samples$data[,facs],dnn=facs)
+}
 
 ggplot.recov <- function(ggdf, ncol=10) {
   ggplot(ggdf, aes(reps, M))+
@@ -194,7 +195,7 @@ get.ggdf.recov <- function(post_summaries, msds, grepchr="B") {
   for (i in grep(grepchr, colnames(post_summaries[[1]]))){
     j = j + 1
     tmp [[j]] <- data.frame(cbind(post_summaries[[1]][,i], 
-                                   post_summaries[[2]][,i], post_summaries[[3]][,i]))
+                                  post_summaries[[2]][,i], post_summaries[[3]][,i]))
     name <- rownames(msds)[i]
     colnames(tmp[[j]]) <- c("M", "LCI", "HCI")
     tmp[[j]]$reps <- 1:100
@@ -225,27 +226,27 @@ get.participant.median.CIs <- function(hsamples) {
 minp <- function (effect) min(ecdf(effect)(0), 1-ecdf(effect)(0))
 
 zandp <- function(samples, fun){
-    effect<- group.inference.dist(samples, fun)
-    Z <- mean(effect)/sd(effect)
-    p <- minp(effect)
-    paste(round(Z,2), " (", round(p,3), ")", sep="")
+  effect<- group.inference.dist(samples, fun)
+  Z <- mean(effect)/sd(effect)
+  p <- minp(effect)
+  paste(round(Z,2), " (", round(p,3), ")", sep="")
 }
 
 mean.sd <- function(samples, fun){
-    effect<- group.inference.dist(samples, fun)
-    M <- mean(effect)
-    SD <- sd(effect)
-    paste(round(M,3), " (", round(SD,3), ")", sep="")
+  effect<- group.inference.dist(samples, fun)
+  M <- mean(effect)
+  SD <- sd(effect)
+  paste(round(M,3), " (", round(SD,3), ")", sep="")
 }
 
-  Z.p.acrossexp <- function(samples1,samples2, fun){
-    effect1<- group.inference.dist(samples1, fun)
-    effect2 <- group.inference.dist(samples2, fun)
-    effect<- effect1 - effect2
-    Z <- mean(effect)/sd(effect)
-    p <- minp(effect)
-    paste(round(Z,2), " (", round(p,3), ")", sep="")
-  }
+Z.p.acrossexp <- function(samples1,samples2, fun){
+  effect1<- group.inference.dist(samples1, fun)
+  effect2 <- group.inference.dist(samples2, fun)
+  effect<- effect1 - effect2
+  Z <- mean(effect)/sd(effect)
+  p <- minp(effect)
+  paste(round(Z,2), " (", round(p,3), ")", sep="")
+}
 
 ##accepts a function and does it to the thetas for each subject then averages after
 group.inference.dist <- function (hsamples, fun) {
@@ -271,23 +272,23 @@ group.inference.dist <- function (hsamples, fun) {
 # bw="nrd0";report=10;save.simulation=TRUE;factors=NA
 # av.posts<-av.posts.threscond
 avps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=TRUE,
-                                    bw="nrd0",report=10,save.simulation=TRUE,factors=NA, av.posts=c())
+                                 bw="nrd0",report=10,save.simulation=TRUE,factors=NA, av.posts=c())
   # make list of posterior preditive density, quantiles and response p(robability)
 {
-
-
+  
+  
   get.dqp <- function(sim,facs,probs,n.post=NA) {
-
+    
     quantile.names <- function(x,probs=seq(0, 1, 0.25),na.rm=FALSE,type=7, ...) {
       out <- quantile(x,probs=probs,na.rm=na.rm,type=type,names=FALSE,...)
       names(out) <- probs*100
       if (all(is.na(out))) NULL else out
     }
-
+    
     qs <- tapply(sim$RT,sim[,c(facs,"R")],quantile.names,probs=probs,na.rm=TRUE)
     #     qs <- apply(qs,1:length(dim(qs)),function(x){
     #       if ( is.null(x[[1]]) || all(is.na(x[[1]]))) NULL else x[[1]]})
-
+    
     # get probabilities given not na
     simOK <- sim[!is.na(sim$RT),]
     p <- tapply(simOK$RT,simOK[,c(facs,"R")],length)
@@ -301,7 +302,7 @@ avps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=TRU
     pNA <- tapply(is.na(sim$RT),sim[,c(facs,"R")],sum)
     pNA[is.na(pNA)] <- 0 # In case some cells are empty
     pNA <- pNA/npNA
-
+    
     # For a simulation get proability replicates
     if (!is.na(n.post)) {
       repfac <- rep(1:n.post,each=sum(ns))
@@ -317,7 +318,7 @@ avps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=TRU
       ps=NULL
       pNAs=NULL
     }
-
+    
     # cell names
     cell.names <- dimnames(qs)[[1]]
     n.cell <- length(facs)+1
@@ -354,13 +355,13 @@ avps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=TRU
     }
     list(pdf=dens,cdf=qs,p=p,ps=ps,pNA=pNA,pNAs=pNAs)
   }
-
+  
   model <- attributes(samples$data)$model
   facs <- names(attr(model,"factors"))
   
   cvs <- samples$data[,attr(model,"cvs"), drop=FALSE]
   attr(cvs,"row.facs") <- apply(apply(
-  samples$data[,facs,drop=FALSE],2,as.character),1,paste,collapse=".")
+    samples$data[,facs,drop=FALSE],2,as.character),1,paste,collapse=".")
   
   if (any(is.na(factors))) factors <- facs
   if (!all(factors %in% facs))
@@ -376,25 +377,25 @@ avps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=TRU
   }
   n.post <- length(use)
   posts <- thetas[use,]
-
-
+  
+  
   cat("Below is how I'm averaging (each row is averaged). If this is wrong, adjust your
       av.posts to grep correctly.")
   for (q in 1:length(av.posts)) print(colnames(posts[, grep(av.posts[q], colnames(posts))]))
   ###tweak to average av.posts
   q=1
-
+  
   if(length(av.posts)!= 0) {
     ### loop through all the averaged posts
     for (q in 1:length(av.posts)) {
-
+      
       num.params <- dim(posts[, grep(av.posts[q], colnames(posts))])[2]
       average.params <- rowMeans(posts[, grep(av.posts[q], colnames(posts))])
       posts[, grep(av.posts[q], colnames(posts))] <- matrix(average.params,nrow=length(average.params),ncol=num.params,byrow=F)
-
+      
     }
   }
-
+  
   ########
   n.rep <- sum(ns)
   sim <- data.frame(matrix(nrow=n.post*n.rep,ncol=dim(samples$data)[2]))
@@ -442,8 +443,8 @@ avps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=TRU
 
 #lapplys the above function on everybody
 avps.h.post.predict.dmc<- function(samples,n.post=100,probs=c(1:99)/100,
-                                          bw="nrd0",
-                                     save.simulation=FALSE, av.posts=c())
+                                   bw="nrd0",
+                                   save.simulation=FALSE, av.posts=c())
   # apply lost.predict to each subject
 {
   lapply(samples,avps.post.predict.dmc,n.post=n.post,probs=probs,bw=bw,
@@ -455,32 +456,32 @@ avps.h.post.predict.dmc<- function(samples,n.post=100,probs=c(1:99)/100,
 # lower=.025
 # upper=.975
 get.effects.dmc <- function (PPs, fun = function (x) {mean (x)}, lower=.025, upper=.975) {
-
+  
   simdata<- do.call(rbind, PPs)
   data <- lapply(PPs, function(x) attr(x, "data"))
   data <- do.call(rbind, data)
   nreps=max(PPs[[1]]$reps)
-
-
+  
+  
   data.effects<- fun(data)
   noutput <- length(data.effects)
-
+  
   sim.effects <- matrix(NA, nrow= nreps, ncol=noutput+1)
   sim.effects[,noutput+1] <- 1:nreps
-
+  
   colnames(sim.effects) <- c(names(data.effects), "n.rep")
   ######
-
+  
   ##calculate effects separately for each rep
   for (j in 1:nreps) {
-
+    
     currentsim.effects <- simdata[simdata$reps==j,]
     sim.effects[j,1:noutput] <- fun(currentsim.effects)
-
+    
   }
   ##Get a ggplot df with posterior mean, lower, and upper.
   effects.ggdf <-  t(apply(sim.effects, c(2), function(x) c(mean(x),
-                                                quantile(x, probs=c(lower,upper)))))
+                                                            quantile(x, probs=c(lower,upper)))))
   effects.ggdf <- data.frame(effects.ggdf)
   effects.ggdf <- effects.ggdf[(!rownames(effects.ggdf) %in% "n.rep"),]
   colnames(effects.ggdf) <- c("mean", "lower", "upper")
@@ -491,32 +492,32 @@ get.effects.dmc <- function (PPs, fun = function (x) {mean (x)}, lower=.025, upp
 }
 
 ss.get.effects.dmc <- function (PPs, fun = function (x) {mean (x)}, lower=.025, upper=.975) {
-
+  
   simdata<- PPs
   data <- attr(PPs, "data")
   nreps=max(PPs$reps)
-
-
+  
+  
   data.effects<- fun(data)
   noutput <- length(data.effects)
-
+  
   sim.effects <- matrix(NA, nrow= nreps, ncol=noutput+1)
   sim.effects[,noutput+1] <- 1:nreps
-
+  
   colnames(sim.effects) <- c(names(data.effects), "n.rep")
   ######
-
+  
   ##calculate effects separately for each rep
   for (j in 1:nreps) {
-
+    
     currentsim.effects <- simdata[simdata$reps==j,]
     sim.effects[j,1:noutput] <- fun(currentsim.effects)
-
+    
   }
-
+  
   ##Get a ggplot df with posterior mean, lower, and upper.
   effects.ggdf <-  t(apply(sim.effects, c(2), function(x) c(mean(x, na.rm=T),
-                                                quantile(x, probs=c(lower,upper), na.rm=T))))
+                                                            quantile(x, probs=c(lower,upper), na.rm=T))))
   effects.ggdf <- data.frame(effects.ggdf)
   effects.ggdf <- effects.ggdf[(!rownames(effects.ggdf) %in% "n.rep"),]
   colnames(effects.ggdf) <- c("mean", "lower", "upper")
@@ -645,10 +646,10 @@ pickps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=T
     posts[,pickps_others] <-  posts[,pickps_set] 
   } else {
     posts[,colnames(posts) %in% pickps_others][,pickps_others] <- 
-    posts[,colnames(posts) %in% pickps_set][,pickps_set] 
+      posts[,colnames(posts) %in% pickps_set][,pickps_set] 
     
   }
-
+  
   
   ########
   n.rep <- sum(ns)
@@ -695,9 +696,9 @@ pickps.post.predict.dmc = function(samples,n.post=100,probs=c(1:99)/100,random=T
 
 #lapply the above to the whole samples object.
 pickps.h.post.predict.dmc<- function(samples,n.post=100,probs=c(1:99)/100,
-                                   bw="nrd0",
-                                   save.simulation=FALSE, pickps_set, pickps_others,
-                                   special_model=NA)
+                                     bw="nrd0",
+                                     save.simulation=FALSE, pickps_set, pickps_others,
+                                     special_model=NA)
   # apply lost.predict to each subject
 {
   lapply(samples,pickps.post.predict.dmc,n.post=n.post,probs=probs,bw=bw,
@@ -719,16 +720,14 @@ get.hdata.dmc <- function(hsamples) {
 
 fixedeffects.meanthetas <- function (samples) {
   
-#handle different nmcs  
+  #handle different nmcs  
   nmcs<- sapply(samples, function(x) x$nmc)
   nmc <- min(nmcs)
-#Different numbers of nmc for each participant... use the min number and then
+  #Different numbers of nmc for each participant... use the min number and then
   #for participants wtih more randomly sample out that many
   for (i in 1:length(samples)) if (nmcs[i] > nmc) samples[[i]]$theta <- 
     samples[[i]]$theta[,,sample(1:dim(samples[[i]]$theta)[3], nmc)]
-####
   
-    
   samps <- lapply(samples, function(x)
     x["theta"])
   ##
@@ -747,48 +746,67 @@ fixedeffects.meanthetas <- function (samples) {
 
 get.pinf.subjects <- function(funs=list(mean), hsamples, eff.names= c()) {
   inference<- list()
-   for (i in 1:length(hsamples)) {
-     thetas <- hsamples[[i]]$theta
-     effects<-list()
-     for(j in 1:length(funs)){
-       effects [[j]] <- funs[[j]](thetas)
-       # names(effects) <- eff.names
-     }
-     inference[[i]] <- effects
-     names(inference[[i]]) <- eff.names
-   } 
-   final.effects <- list()
-   for (k in 1:length(funs)) {
-     this.inf <- lapply(inference, function(x) x[[k]])
-     inf2 <- unlist(this.inf)
-     dim3 <- c(dim(this.inf[[1]]), length(inf2)/prod(dim(this.inf[[1]])))
-     dim(inf2) <- dim3
-     final.effects[[k]] <- inf2
-   }
-   final.effects
+  for (i in 1:length(hsamples)) {
+    thetas <- hsamples[[i]]$theta
+    effects<-list()
+    for(j in 1:length(funs)){
+      effects [[j]] <- funs[[j]](thetas)
+      # names(effects) <- eff.names
+    }
+    inference[[i]] <- effects
+    names(inference[[i]]) <- eff.names
+  } 
+  final.effects <- list()
+  for (k in 1:length(funs)) {
+    this.inf <- lapply(inference, function(x) x[[k]])
+    inf2 <- unlist(this.inf)
+    dim3 <- c(dim(this.inf[[1]]), length(inf2)/prod(dim(this.inf[[1]])))
+    dim(inf2) <- dim3
+    final.effects[[k]] <- inf2
+  }
+  final.effects
 }
 
+#
+fast.avgsamples <- function (hsamples) {
+  nmcs<- sapply(hsamples, function(x) x$nmc)
+  nmc <- min(nmcs)
+  #Different numbers of nmc for each participant... use the min number and then
+  #for participants wtih more randomly sample out that many
+  for (i in 1:length(hsamples)) if (nmcs[i] > nmc) hsamples[[i]]$theta <- 
+    hsamples[[i]]$theta[,,sample(1:dim(hsamples[[i]]$theta)[3], nmc)]
+  avg <- list()
+  for (i in 1:length(hsamples)) avg [[i]] <- hsamples[[i]]$theta
+  avg2 <- unlist(avg)
+  dim3 <- c(dim(avg[[1]]), length(avg2)/prod(dim(avg[[1]])))
+  dim(avg2) <- dim3
+  out <- apply(avg2, c(1,2,3), mean)
+  colnames(out) <- dimnames(avg[[1]])[[2]]
+  out
+}
 
+#
 get.msds <- function(samples) {
-  av.thetas <-fixedeffects.meanthetas(samples)[[1]]
-  msds <- cbind(apply(av.thetas, 2, mean), apply(av.thetas, 2, sd))
-  colnames(msds) <- c("M", "SD")
-  msds <- data.frame(msds)
-  msds
+  avg_samples <- fast.avgsamples(samples)
+  M <- apply(avg_samples, 2, mean)
+  SD <- apply(avg_samples, 2, sd)
+  out <- cbind(M,SD)
+  colnames(out) <- c("M", "SD")
+  out
 }
 
 
 cors.plot <- function(out) {
   tmp <- data.frame(cbind(out[[1]],
-                                   out[[2]], out[[3]]))
+                          out[[2]], out[[3]]))
   colnames(tmp)<- c("M", "LCI", "HCI")
   tmp$param <- names(out[[1]])
   ggdf<-tmp
   ggplot(ggdf, aes(param, M))+
-  geom_point(size=3)+
-  ylab("")+ 
-  geom_hline(aes(yintercept=0), linetype=2) +
-  geom_errorbar(data=ggdf,aes(ymin=LCI,ymax=HCI)) 
+    geom_point(size=3)+
+    ylab("")+ 
+    geom_hline(aes(yintercept=0), linetype=2) +
+    geom_errorbar(data=ggdf,aes(ymin=LCI,ymax=HCI)) 
   
 }
 
@@ -797,7 +815,7 @@ cors.plot <- function(out) {
 #for a single participant's thetas
 get_average_thetas <- function (regex, thetas) {
   apply(thetas[, grep(regex, colnames(thetas)),], c(1,3),
-      mean)
+        mean)
 }
 
 #averages thetas together that match a certain regex expression
