@@ -146,7 +146,7 @@ recov_samps <- lapply(recov_samples, function(x) x["theta"])
 # recov_post_summ
 # 
 # # Save
-# save(top_post_summ, file = "deriv/recov_post_summ_full_sdvS.RData")
+# save(recov_post_summ, file = "deriv/recov_post_summ_full_sdvS.RData")
 print(load("deriv/recov_post_summ_full_sdvS.RData"))
 
 
@@ -171,9 +171,6 @@ recov_msds <- data.frame(get.msds(recov_samples))
 recov_msds
 recov_pars <- recov_msds$M; names(recov_pars) <- rownames(recov_msds)
 recov_pars
-
-
-
 
 
 pars <- data.frame(cbind(top_pars, recov_pars))
@@ -280,12 +277,12 @@ for (i in 1:length(recov_samples)) if (nmcs[i] > nmc) recov_samples[[i]]$theta <
   recov_samples[[i]]$theta[,,sample(1:dim(recov_samples[[i]]$theta)[3], nmc)]
 recov_samps <- lapply(recov_samples, function(x) x["theta"])
 
-# Get summary
-recov_post_summ <- get.participant.median.CIs(recov_samps)
-recov_post_summ
-
-# Save
-save(recov_post_summ, file = "deriv/recov_post_summ_v_sdvS.RData")
+# # Get summary
+# recov_post_summ <- get.participant.median.CIs(recov_samps)
+# recov_post_summ
+# 
+# # Save
+# save(recov_post_summ, file = "deriv/recov_post_summ_v_sdvS.RData")
 print(load("deriv/recov_post_summ_v_sdvS.RData"))
 
 # Load true parameter vector
